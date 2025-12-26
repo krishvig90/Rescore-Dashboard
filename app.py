@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 
 # ----------------------------------
 # PAGE SETUP
@@ -7,11 +8,36 @@ import pandas as pd
 st.set_page_config(page_title="Rescoring Quality Dashboard", layout="wide")
 st.title("📊 Rescoring Quality Dashboard")
 
-uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx"])
-if not uploaded_file:
+# ----------------------------------
+# ADMIN CONFIG
+# ----------------------------------
+ADMIN_PASSWORD = "admin123"        # 🔴 change this
+DATA_DIR = "data"
+DATA_FILE = f"{DATA_DIR}/latest.xlsx"
+
+# ----------------------------------
+# ADMIN UPLOAD (ONLY FOR YOU)
+# ----------------------------------
+st.sidebar.header("Admin Upload")
+password = st.sidebar.text_input("Admin Password", type="password")
+
+if password == ADMIN_PASSWORD:
+    uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
+
+    if uploaded_file:
+        os.makedirs(DATA_DIR, exist_ok=True)
+        with open(DATA_FILE, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        st.sidebar.success("File uploaded successfully")
+
+# ----------------------------------
+# LOAD SHARED DATA (FOR EVERYONE)
+# ----------------------------------
+if not os.path.exists(DATA_FILE):
+    st.warning("No data uploaded yet. Admin must upload the file.")
     st.stop()
 
-df = pd.read_excel(uploaded_file)
+df = pd.read_excel(DATA_FILE)
 
 # ----------------------------------
 # COLUMN CONSTANTS (0-based)
@@ -111,7 +137,6 @@ def build_human_table(data, part):
 
                 scored = r.iloc[score_cols].values
 
-                # If Scorer-2 missing → fallback to AI
                 if scorer_col == SCORER2_ID_COL and pd.isna(scored).all():
                     scored = r.iloc[ai_cols].values
 
@@ -154,7 +179,7 @@ def build_human_table(data, part):
     return pd.DataFrame(output)
 
 # ----------------------------------
-# AI TABLE (CORRECT LOGIC)
+# AI TABLE
 # ----------------------------------
 def build_ai_table(data, part):
 
@@ -165,7 +190,6 @@ def build_ai_table(data, part):
         labels = ["GA1", "GA2", "V", "G", "O"]
         final_cols, ai_cols = PB_FINAL, PB_AI
 
-    # AI rows = AY–BC all empty
     ai_rows = data[data.iloc[:, S2_CHECK_COLS].isna().all(axis=1)]
 
     rescored_rows = 0
