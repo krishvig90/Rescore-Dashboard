@@ -68,6 +68,25 @@ part_a = df[df.iloc[:, PART_COL].astype(str).str.strip() == "A"]
 part_b = df[df.iloc[:, PART_COL].astype(str).str.strip() == "B"]
 
 # ----------------------------------
+# HIGHLIGHT RESCORING %
+# ----------------------------------
+def highlight_rescoring_pct(val):
+    try:
+        if val >= 15:
+            return "background-color:#FFCC99"  # light orange
+    except:
+        pass
+    return ""
+
+def style_rescoring_pct(df):
+    if "Rescoring %" not in df.columns:
+        return df
+    return df.style.applymap(
+        highlight_rescoring_pct,
+        subset=["Rescoring %"]
+    ).format({"Rescoring %": "{:.2f}%"})
+
+# ----------------------------------
 # HUMAN SCORER TABLE
 # ----------------------------------
 def build_human_table(data, part):
@@ -207,13 +226,13 @@ def build_ai_table(data, part):
 # DASHBOARD
 # ----------------------------------
 st.subheader("🟦 Part A – Human Scorers")
-st.dataframe(build_human_table(part_a, "A"), use_container_width=True)
+st.dataframe(style_rescoring_pct(build_human_table(part_a, "A")), use_container_width=True)
 
 st.subheader("🟩 Part B – Human Scorers")
-st.dataframe(build_human_table(part_b, "B"), use_container_width=True)
+st.dataframe(style_rescoring_pct(build_human_table(part_b, "B")), use_container_width=True)
 
 st.subheader("🤖 Part A – AI")
-st.dataframe(build_ai_table(part_a, "A"), use_container_width=True)
+st.dataframe(style_rescoring_pct(build_ai_table(part_a, "A")), use_container_width=True)
 
 st.subheader("🤖 Part B – AI")
-st.dataframe(build_ai_table(part_b, "B"), use_container_width=True)
+st.dataframe(style_rescoring_pct(build_ai_table(part_b, "B")), use_container_width=True)
