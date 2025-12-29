@@ -72,7 +72,7 @@ part_b = df[df.iloc[:, PART_COL].astype(str).str.strip() == "B"]
 # ----------------------------------
 def highlight_rescoring_pct(val):
     try:
-        if val >= 15:
+        if val >= 10:
             return "background-color:#FFCC99"  # light orange
     except:
         pass
@@ -237,3 +237,4 @@ st.write(style_rescoring_pct(build_ai_table(part_a, "A")))
 
 st.subheader("🤖 Part B – AI")
 st.write(style_rescoring_pct(build_ai_table(part_b, "B")))
+
